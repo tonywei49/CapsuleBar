@@ -28,7 +28,7 @@ cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 SIGN_ID="${CAPSULE_SIGN_ID:-}"
 if [[ -z "$SIGN_ID" ]]; then
   SIGN_ID="$(security find-identity -v -p codesigning 2>/dev/null \
-    | awk -F'"' '/Apple Development/ {print $2; exit}')"
+    | awk -F'"' '/Apple Development/ && !f {print $2; f=1}')"
 fi
 if [[ -z "$SIGN_ID" ]]; then
   SIGN_ID="-"
