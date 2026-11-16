@@ -208,13 +208,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 3) expanded list: the first row of an app with a menu bar icon should open its own menu
         steps.append((4.4, { controller.expand(reason: "rightclick-test") }))
         steps.append((5.6, {
-            guard let (point, name) = controller.debugFirstMenuRow else { print("RCTEST no menu-bar row"); return }
+            guard let (point, name) = controller.debugMenuRow(named: ProcessInfo.processInfo.environment["CAPSULE_RC_APP"]) else { print("RCTEST no menu-bar row"); return }
             let f = controller.debugPanelFrame
             print("RCTEST row \(name)")
             rightClick(NSPoint(x: f.minX + point.x, y: f.maxY - point.y))
         }))
         steps.append((7.4, {
-            print("RCTEST expanded after row click=\(controller.state.isExpanded)"); fflush(stdout)
+            print("RCTEST expanded after row click=\(controller.state.isExpanded) message=\(controller.state.message ?? "none")")
+            // Pop-up menu windows (layer 101) on screen, by owner: shows whether a menu really opened.
+            let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+            let menus = windows.filter { ($0[kCGWindowLayer as String] as? Int) == 101 }
+                .compactMap { $0[kCGWindowOwnerName as String] as? String }
+            print("RCTEST open menus=\(menus)"); fflush(stdout)
             escape()
         }))
         steps.append((8.2, {

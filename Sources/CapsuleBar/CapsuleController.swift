@@ -230,12 +230,14 @@ final class CapsuleController {
         return info
     }
 
-    /// Debug: center of the first visible row (top-left view coordinates) and its app.
-    var debugFirstMenuRow: (CGPoint, String)? {
+    /// Debug: center of the first visible menu-bar app row (top-left view coordinates) and its
+    /// app; with `name`, only that app's row.
+    func debugMenuRow(named name: String? = nil) -> (CGPoint, String)? {
         state.rowFrames
             .filter { state.listFrame.contains(CGPoint(x: $0.value.midX, y: $0.value.midY)) }
             .compactMap { pid, frame -> (CGPoint, String)? in
-                guard let info = rowApp(at: CGPoint(x: frame.midX, y: frame.midY)) else { return nil }
+                guard let info = rowApp(at: CGPoint(x: frame.midX, y: frame.midY)),
+                      name == nil || info.name == name else { return nil }
                 return (CGPoint(x: frame.midX, y: frame.midY), info.name)
             }
             .min { $0.0.y < $1.0.y }

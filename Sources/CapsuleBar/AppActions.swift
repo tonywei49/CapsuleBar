@@ -74,6 +74,21 @@ enum AppActions {
             return "「\(app.localizedName ?? "")」沒有選單列圖示"
         }
         let result = AXUIElementPerformAction(first, kAXPressAction as CFString)
-        return result == .success ? nil : "打開選單失敗（AX 錯誤 \(result.rawValue)）"
+        // While its menu is open the app is busy tracking it and the press times out
+        // (kAXErrorCannotComplete) even though it worked: check for the menu window instead.
+        if result == .success || (result == .cannotComplete && hasOpenMenu(pid: app.processIdentifier)) {
+            return nil
+        }
+        return "打開選單失敗（AX 錯誤 \(result.rawValue)）"
+    }
+
+    /// True when the process has a pop-up menu window on screen (window list metadata needs no
+    /// Screen Recording permission).
+    static func hasOpenMenu(pid: pid_t) -> Bool {
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+        return windows.contains {
+            ($0[kCGWindowOwnerPID as String] as? pid_t) == pid
+                && ($0[kCGWindowLayer as String] as? Int) == Int(CGWindowLevelForKey(.popUpMenuWindow))
+        }
     }
 }
