@@ -283,6 +283,15 @@ struct ExpandedView: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 6)
             }
+            .background(GeometryReader { proxy in
+                Color.clear.preference(key: RowFramesKey.self, value: [RowFramesKey.listID: proxy.frame(in: .global)])
+            })
+            .onPreferenceChange(RowFramesKey.self) { frames in
+                MainActor.assumeIsolated {
+                    state.listFrame = frames[RowFramesKey.listID] ?? .zero
+                    state.rowFrames = frames.filter { $0.key != RowFramesKey.listID }
+                }
+            }
 
             if let message = state.message {
                 Text(message)
@@ -411,7 +420,12 @@ struct ProcessRow: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(isHot ? Color.red.opacity(hovering ? 0.22 : 0.14) : Color.white.opacity(hovering ? 0.08 : 0))
         )
+        .background(GeometryReader { proxy in
+            Color.clear.preference(key: RowFramesKey.self, value: [info.id: proxy.frame(in: .global)])
+        })
         .onHover { hovering = $0 }
+        // Apps with a menu bar icon: the panel turns right clicks into that app's own menu
+        // (CapsuleController.handleRightClick). This menu is for everything else.
         .contextMenu { menuItems }
     }
 
@@ -541,6 +555,15 @@ struct HotGlow: View {
             .onAppear {
                 withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { bright = true }
             }
+    }
+}
+
+/// Frames of the expanded list's rows by pid, plus the visible list area under `listID`.
+struct RowFramesKey: PreferenceKey {
+    static let listID: pid_t = -1
+    static let defaultValue: [pid_t: CGRect] = [:]
+    static func reduce(value: inout [pid_t: CGRect], nextValue: () -> [pid_t: CGRect]) {
+        value.merge(nextValue()) { $1 }
     }
 }
 

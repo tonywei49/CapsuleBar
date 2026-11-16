@@ -54,7 +54,7 @@ MacBook 螢幕窄又有瀏海，常駐程式一多，右上角的選單列圖示
 
 - **左鍵點膠囊**：展開／收合所有程式清單；點外面任何地方收合
 - **右鍵點膠囊**：選單列程式清單
-- **清單中的 App**：點名稱切換過去；右鍵或「⋯」開啟操作選單；滑鼠移上去出現 ⊗ 可直接結束
+- **清單中的 App**：點名稱切換過去；**右鍵直接打開它自己的選單列選單**（沒有選單列圖示的 App 則顯示操作選單）；「⋯」開啟操作選單（切換、隱藏、釘選、重新啟動、結束）；滑鼠移上去出現 ⊗ 可直接結束
 - **設定**：展開 → 右上角齒輪 → 設定…
 
 ## 系統需求
@@ -67,14 +67,15 @@ MacBook 螢幕窄又有瀏海，常駐程式一多，右上角的選單列圖示
 ### 方法一：DMG 安裝檔
 
 1. 到 [**Releases**](https://github.com/tonywei49/CapsuleBar/releases/latest) 下載 `CapsuleBar-<版本>.dmg`，打開後把 **CapsuleBar** 拖進 **應用程式**。
-2. 第一次打開時，macOS 可能顯示「無法驗證開發者」——目前的版本尚未經 Apple 公證。請到 **系統設定 › 隱私權與安全性**，在下方按 **強制打開**（或在 Finder 對 App 按右鍵 › 打開）。
-   也可以在終端機執行：`xattr -dr com.apple.quarantine /Applications/CapsuleBar.app`
+2. 打開 CapsuleBar。0.1.1 起的版本以 Developer ID 簽名並經 Apple 公證，可直接打開。
 
 自己產生 DMG：
 
 ```bash
 scripts/make-dmg.sh      # 產生 build/CapsuleBar-<版本>.dmg（Universal）
 ```
+
+鑰匙圈中有「Developer ID Application」憑證，且已用 `xcrun notarytool store-credentials capsulebar-notary …` 存好公證帳密時，腳本會自動簽名、送 Apple 公證並把結果釘進 DMG；否則產生未公證的 DMG。
 
 ### 方法二：從原始碼建置
 
@@ -90,7 +91,7 @@ open /Applications/CapsuleBar.app
 
 第一次使用「打開選單列選單」時，到 **系統設定 › 隱私權與安全性 › 輔助使用** 允許 CapsuleBar。
 
-> 建置腳本預設產生 Universal（arm64 + x86_64）版本，只要本機架構可用 `CAPSULE_ARCHS=arm64 scripts/build-app.sh` 加快建置。簽名會自動使用鑰匙圈中的 Apple Development 憑證（也可用 `CAPSULE_SIGN_ID` 指定）；沒有憑證時使用 ad-hoc 簽名，此時每次重新建置都需要重新授予輔助使用權限。
+> 建置腳本預設產生 Universal（arm64 + x86_64）版本，只要本機架構可用 `CAPSULE_ARCHS=arm64 scripts/build-app.sh` 加快建置。簽名會自動使用鑰匙圈中的 Developer ID Application 或 Apple Development 憑證（也可用 `CAPSULE_SIGN_ID` 指定）；沒有憑證時使用 ad-hoc 簽名，此時每次重新建置都需要重新授予輔助使用權限。
 
 ## 為什麼不上架 App Store
 
@@ -119,7 +120,7 @@ open /Applications/CapsuleBar.app
 | `--snapshot DIR` | 輸出膠囊、展開面板、設定視窗截圖與 `report.txt` 後結束 |
 | `--selftest` | 用「計算機」測試啟動／重新啟動／結束／強制結束後結束 |
 | `--axprobe` | 列出哪些 App 有可透過輔助使用打開的選單列圖示 |
-| `--rightclick-test` | 送出真實右鍵事件測試膠囊與釘選圖示（會短暫移動游標） |
+| `--rightclick-test` | 送出真實右鍵事件測試膠囊、釘選圖示與展開清單（會短暫移動游標） |
 | `--enable-login-item` | 將這份 App 註冊為登入項目 |
 
 > 從終端機直接執行執行檔時，輔助使用權限會算在終端機上；測試權限相關功能請用 `open`。
@@ -128,8 +129,6 @@ open /Applications/CapsuleBar.app
 
 - 收合時的翅膀可能蓋住最靠近瀏海的幾個選單列圖示。
 - 全螢幕 App 時，外接螢幕上的膠囊仍會蓋在畫面頂端。
-- 尚未使用 Developer ID 簽名與公證，下載後第一次打開需要手動允許（見「安裝」）。
-
 ## 授權
 
 [MIT](LICENSE)

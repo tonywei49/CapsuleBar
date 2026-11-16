@@ -175,7 +175,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Debug: posts real right clicks (through the window server) on the main screen's capsule
-    /// and on its first pinned icon, closing each menu with Escape, then restores the cursor.
+    /// on its first pinned icon and on the first menu-bar app row of the expanded list, closing each
+    /// menu with Escape, then restores the cursor.
     private func runRightClickTest() {
         guard let controller = controllers.first, let mainHeight = NSScreen.screens.first?.frame.height else { return }
         let saved = NSEvent.mouseLocation
@@ -204,7 +205,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             print("RCTEST no pins")
         }
-        steps.append((4.6, {
+        // 3) expanded list: the first row of an app with a menu bar icon should open its own menu
+        steps.append((4.4, { controller.expand(reason: "rightclick-test") }))
+        steps.append((5.6, {
+            guard let (point, name) = controller.debugFirstMenuRow else { print("RCTEST no menu-bar row"); return }
+            let f = controller.debugPanelFrame
+            print("RCTEST row \(name)")
+            rightClick(NSPoint(x: f.minX + point.x, y: f.maxY - point.y))
+        }))
+        steps.append((7.4, {
+            print("RCTEST expanded after row click=\(controller.state.isExpanded)"); fflush(stdout)
+            escape()
+        }))
+        steps.append((8.2, {
             CGWarpMouseCursorPosition(cg(saved))
             print("RCTEST done"); fflush(stdout)
             NSApp.terminate(nil)

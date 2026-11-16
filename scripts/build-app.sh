@@ -1,9 +1,9 @@
 #!/bin/zsh
 # Build CapsuleBar.app into ./build
 # Usage: scripts/build-app.sh [debug|release]   (default: release)
-# Signing: uses $CAPSULE_SIGN_ID if set, otherwise the first "Apple Development"
-# identity in the keychain (a stable identity keeps the Accessibility grant
-# across rebuilds), otherwise ad-hoc.
+# Signing: uses $CAPSULE_SIGN_ID if set, otherwise a "Developer ID Application" or
+# "Apple Development" identity from the keychain (a stable identity keeps the
+# Accessibility grant across rebuilds), otherwise ad-hoc.
 set -euo pipefail
 
 ROOT="${0:A:h:h}"
@@ -25,13 +25,16 @@ cp "$BIN" "$APP/Contents/MacOS/CapsuleBar"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
+# Prefer Developer ID (same identity as releases, so permissions survive updates), then
+# Apple Development, then ad-hoc.
 SIGN_ID="${CAPSULE_SIGN_ID:-}"
-if [[ -z "$SIGN_ID" ]]; then
-  SIGN_ID="$(security find-identity -v -p codesigning 2>/dev/null \
-    | awk -F'"' '/Apple Development/ && !f {print $2; f=1}')"
-fi
+IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null)"
+for kind in "Developer ID Application" "Apple Development"; do
+  [[ -n "$SIGN_ID" ]] && break
+  SIGN_ID="$(print -r -- "$IDENTITIES" | awk -F'"' -v k="$kind" 'index($0, k) && !f {print $2; f=1}')"
+done
 if [[ -z "$SIGN_ID" ]]; then
   SIGN_ID="-"
 fi
-codesign --force --options runtime --sign "$SIGN_ID" "$APP"
+codesign --force --options runtime --timestamp --sign "$SIGN_ID" "$APP"
 echo "Built $APP (signed with: $SIGN_ID)"

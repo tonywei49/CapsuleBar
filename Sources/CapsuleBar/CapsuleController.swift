@@ -36,6 +36,9 @@ final class CapsuleState: ObservableObject {
     @Published var busy: Set<pid_t> = []
     /// Pinned icon frames in the hosting view (top-left origin), for right-click hit testing.
     var pinFrames: [String: CGRect] = [:]
+    /// Expanded list: row frames by pid and the visible list area (same coordinates as pinFrames).
+    var rowFrames: [pid_t: CGRect] = [:]
+    var listFrame: CGRect = .zero
     let geometry: CapsuleGeometry
 
     static let toastHeight: CGFloat = 30
@@ -195,10 +198,17 @@ final class CapsuleController {
     // MARK: Right click
 
     /// Collapsed capsule: right-click a pinned icon to open its menu bar menu, anywhere else for a
-    /// menu of every app that has a menu bar icon. Expanded: let SwiftUI context menus handle it.
+    /// menu of every app that has a menu bar icon. Expanded: right-click a row of an app with a
+    /// menu bar icon to open that app's own menu; other rows get the SwiftUI context menu.
     private func handleRightClick(at windowPoint: NSPoint) -> Bool {
-        guard !state.isExpanded, let view = panel.contentView else { return false }
+        guard let view = panel.contentView else { return false }
         let point = CGPoint(x: windowPoint.x, y: view.bounds.height - windowPoint.y)
+        if state.isExpanded {
+            guard let info = rowApp(at: point) else { return false }
+            NSLog("CapsuleBar right click on row %@", info.name)
+            perform(.openMenuBarExtra, on: info)
+            return true
+        }
         if let id = state.pinFrames.first(where: { $0.value.insetBy(dx: -3, dy: -4).contains(point) })?.key {
             NSLog("CapsuleBar right click on pin %@", id)
             openPinnedMenu(id)
@@ -207,6 +217,28 @@ final class CapsuleController {
             showMenuBarAppsMenu(at: windowPoint, in: view)
         }
         return true
+    }
+
+    /// The app whose list row is under `point`, if that app has a menu bar icon to open.
+    private func rowApp(at point: CGPoint) -> AppInfo? {
+        guard state.listFrame.contains(point),
+              let pid = state.rowFrames.first(where: { $0.value.contains(point) })?.key,
+              state.pendingForceQuit != pid,
+              let info = monitor.apps.first(where: { $0.id == pid }),
+              monitor.hasMenuBarExtra(pid) ?? info.isMenuBarApp
+        else { return nil }
+        return info
+    }
+
+    /// Debug: center of the first visible row (top-left view coordinates) and its app.
+    var debugFirstMenuRow: (CGPoint, String)? {
+        state.rowFrames
+            .filter { state.listFrame.contains(CGPoint(x: $0.value.midX, y: $0.value.midY)) }
+            .compactMap { pid, frame -> (CGPoint, String)? in
+                guard let info = rowApp(at: CGPoint(x: frame.midX, y: frame.midY)) else { return nil }
+                return (CGPoint(x: frame.midX, y: frame.midY), info.name)
+            }
+            .min { $0.0.y < $1.0.y }
     }
 
     private var menuTarget: MenuTarget?
