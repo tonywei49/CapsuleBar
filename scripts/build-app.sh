@@ -11,8 +11,11 @@ CONFIG="${1:-release}"
 APP="$ROOT/build/CapsuleBar.app"
 
 cd "$ROOT"
-swift build -c "$CONFIG"
-BIN="$(swift build -c "$CONFIG" --show-bin-path)/CapsuleBar"
+# Universal binary (Apple silicon + Intel) by default; CAPSULE_ARCHS="arm64" for a faster local build.
+ARCH_FLAGS=()
+for arch in ${=CAPSULE_ARCHS:-arm64 x86_64}; do ARCH_FLAGS+=(--arch "$arch"); done
+swift build -c "$CONFIG" "${ARCH_FLAGS[@]}"
+BIN="$(swift build -c "$CONFIG" "${ARCH_FLAGS[@]}" --show-bin-path)/CapsuleBar"
 
 if [[ -d "$APP" ]]; then
   trash "$APP"

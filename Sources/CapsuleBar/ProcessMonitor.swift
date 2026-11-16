@@ -91,10 +91,10 @@ final class ProcessMonitor: ObservableObject {
         let descriptors = running.map { AppDescriptor(pid: $0.processIdentifier, bundlePath: $0.bundleURL?.path) }
         let processSampler = processSampler
         let systemSampler = systemSampler
-        queue.async {
+        queue.async { [weak self] in
             let usage = processSampler.sample(apps: descriptors)
             let stats = systemSampler.sample()
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async {
                 MainActor.assumeIsolated {
                     self?.apply(running: running, usage: usage, stats: stats)
                 }
@@ -156,9 +156,9 @@ final class ProcessMonitor: ObservableObject {
         let stale = apps.map(\.id).filter { extraCheckedAt[$0].map { now.timeIntervalSince($0) > 20 } ?? true }
         guard !stale.isEmpty else { return }
         probing = true
-        axQueue.async {
+        axQueue.async { [weak self] in
             let found = Set(stale.filter { MenuExtras.hasItems(pid: $0) })
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async {
                 MainActor.assumeIsolated {
                     guard let self else { return }
                     let checked = Date()

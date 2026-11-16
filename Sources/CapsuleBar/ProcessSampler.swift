@@ -15,7 +15,7 @@ struct AppDescriptor {
 }
 
 /// Low-level per-process sampling via libproc. Not thread-safe: use from one serial queue.
-final class ProcessSampler {
+final class ProcessSampler: @unchecked Sendable {
     private let ticksToNanos: Double
     private var previousCPU: [pid_t: UInt64] = [:]   // cumulative CPU time in ns
     private var previousTime: UInt64 = 0             // uptime ns

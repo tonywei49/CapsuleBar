@@ -100,6 +100,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func runSnapshot(dir: URL) {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         var report: [String] = []
+        #if arch(x86_64)
+        var translated: Int32 = 0
+        var size = MemoryLayout<Int32>.size
+        sysctlbyname("sysctl.proc_translated", &translated, &size, nil, 0)
+        report.append("arch=x86_64 rosetta=\(translated == 1)")
+        #else
+        report.append("arch=arm64")
+        #endif
         for (i, c) in controllers.enumerated() {
             report.append("collapsed[\(i)] " + c.snapshot(to: dir.appendingPathComponent("screen\(i)-collapsed.png")))
         }

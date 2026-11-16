@@ -12,7 +12,7 @@ struct SystemStats {
 }
 
 /// Whole-machine CPU and memory, same definitions as Activity Monitor.
-final class SystemSampler {
+final class SystemSampler: @unchecked Sendable {
     private var previousTicks: (busy: UInt64, total: UInt64)?
     private var lastCPU: Double = 0
 

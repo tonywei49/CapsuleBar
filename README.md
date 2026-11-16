@@ -50,9 +50,28 @@ MacBook 螢幕窄又有瀏海，常駐程式一多，右上角的選單列圖示
 - **清單中的 App**：點名稱切換過去；右鍵或「⋯」開啟操作選單；滑鼠移上去出現 ⊗ 可直接結束
 - **設定**：展開 → 右上角齒輪 → 設定…
 
+## 系統需求
+
+- macOS 14 Sonoma 以上
+- **Apple 晶片與 Intel 都支援**（Universal 通用二進位）。Intel Mac 沒有瀏海，膠囊會置中顯示在選單列上。
+
 ## 安裝
 
-需要 macOS 14 以上與 Xcode（Swift 5.9+）。
+### 方法一：DMG 安裝檔
+
+1. 下載 `CapsuleBar-<版本>.dmg`，打開後把 **CapsuleBar** 拖進 **應用程式**。
+2. 第一次打開時，macOS 可能顯示「無法驗證開發者」——目前的版本尚未經 Apple 公證。請到 **系統設定 › 隱私權與安全性**，在下方按 **強制打開**（或在 Finder 對 App 按右鍵 › 打開）。
+   也可以在終端機執行：`xattr -dr com.apple.quarantine /Applications/CapsuleBar.app`
+
+自己產生 DMG：
+
+```bash
+scripts/make-dmg.sh      # 產生 build/CapsuleBar-<版本>.dmg（Universal）
+```
+
+### 方法二：從原始碼建置
+
+需要 Xcode（Swift 5.9+）。
 
 ```bash
 git clone https://github.com/tonywei49/CapsuleBar.git
@@ -64,7 +83,7 @@ open /Applications/CapsuleBar.app
 
 第一次使用「打開選單列選單」時，到 **系統設定 › 隱私權與安全性 › 輔助使用** 允許 CapsuleBar。
 
-> 建置腳本會自動使用鑰匙圈中的 Apple Development 憑證簽名（也可用 `CAPSULE_SIGN_ID` 指定）；沒有憑證時使用 ad-hoc 簽名，此時每次重新建置都需要重新授予輔助使用權限。
+> 建置腳本預設產生 Universal（arm64 + x86_64）版本，只要本機架構可用 `CAPSULE_ARCHS=arm64 scripts/build-app.sh` 加快建置。簽名會自動使用鑰匙圈中的 Apple Development 憑證（也可用 `CAPSULE_SIGN_ID` 指定）；沒有憑證時使用 ad-hoc 簽名，此時每次重新建置都需要重新授予輔助使用權限。
 
 ## 為什麼不上架 App Store
 
@@ -79,6 +98,8 @@ open /Applications/CapsuleBar.app
 | `Sources/CapsuleBar/CapsuleController.swift` | 膠囊視窗、展開／收合、右鍵、指令 |
 | `Sources/CapsuleBar/Views.swift` | SwiftUI 介面 |
 | `Sources/CapsuleBar/Settings.swift` | 設定與設定視窗 |
+| `scripts/build-app.sh` | 建置並簽名 `build/CapsuleBar.app` |
+| `scripts/make-dmg.sh` | 打包 DMG 安裝檔 |
 | `scripts/make-icon.swift` | 以程式繪製 App 圖示 |
 | `SPEC.md` | 規格書 |
 
@@ -100,3 +121,8 @@ open /Applications/CapsuleBar.app
 
 - 收合時的翅膀可能蓋住最靠近瀏海的幾個選單列圖示。
 - 全螢幕 App 時，外接螢幕上的膠囊仍會蓋在畫面頂端。
+- 尚未使用 Developer ID 簽名與公證，下載後第一次打開需要手動允許（見「安裝」）。
+
+## 授權
+
+[MIT](LICENSE)
