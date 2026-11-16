@@ -10,6 +10,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/tonywei49/CapsuleBar/releases/latest"><img src="https://img.shields.io/github/v/release/tonywei49/CapsuleBar?label=%E4%B8%8B%E8%BC%89" alt="下載"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-black" alt="macOS 14+">
+  <img src="https://img.shields.io/badge/Apple%20silicon%20%2B%20Intel-Universal-blue" alt="Universal">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT"></a>
+</p>
+
+<p align="center">
   <img src="docs/capsule.png" alt="收合的膠囊">
 </p>
 
@@ -59,7 +66,7 @@ MacBook 螢幕窄又有瀏海，常駐程式一多，右上角的選單列圖示
 
 ### 方法一：DMG 安裝檔
 
-1. 下載 `CapsuleBar-<版本>.dmg`，打開後把 **CapsuleBar** 拖進 **應用程式**。
+1. 到 [**Releases**](https://github.com/tonywei49/CapsuleBar/releases/latest) 下載 `CapsuleBar-<版本>.dmg`，打開後把 **CapsuleBar** 拖進 **應用程式**。
 2. 第一次打開時，macOS 可能顯示「無法驗證開發者」——目前的版本尚未經 Apple 公證。請到 **系統設定 › 隱私權與安全性**，在下方按 **強制打開**（或在 Finder 對 App 按右鍵 › 打開）。
    也可以在終端機執行：`xattr -dr com.apple.quarantine /Applications/CapsuleBar.app`
 
