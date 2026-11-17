@@ -67,8 +67,7 @@ MacBook 螢幕窄又有瀏海，常駐程式一多，右上角的選單列圖示
 ### 方法一：DMG 安裝檔
 
 1. 到 [**Releases**](https://github.com/tonywei49/CapsuleBar/releases/latest) 下載 `CapsuleBar-<版本>.dmg`，打開後把 **CapsuleBar** 拖進 **應用程式**。
-2. 打開 CapsuleBar。0.1.1 起的版本以 Developer ID 簽名；Apple 公證仍在處理中，通過後會更新 Release 中的安裝檔。
-   在那之前第一次打開會被 macOS 擋下：到 **系統設定 › 隱私權與安全性**，在下方找到 CapsuleBar，按 **仍要打開**。之後就能正常開啟。
+2. 打開 CapsuleBar。0.1.1 起的版本以 Developer ID 簽名並經 Apple 公證，可直接打開。
 
 自己產生 DMG：
 
